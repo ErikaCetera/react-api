@@ -1,62 +1,59 @@
 import { useEffect, useState } from 'react'
+import axios from 'axios'
 
 
 const initialFormData = {
-  title: "",
-  content: "",
-  image: ""
+  titolo: "",
+  contenuto: "",
+  immagine: ""
 };
 
 function App() {
   // Definisce uno stato chiamato 'title' 
   const [articles, setArticles] = useState([]);
   const [formData, setFormData] = useState(initialFormData);
-  const [availableMessage, setAvailableMessage] = useState("");
 
-useEffect(() => {
-  if (formData.available) {
-    setAvailableMessage("L'articolo verrà pubblicato")
-    
-  }else{
-    setAvailableMessage("Attenzione, l'articolo non verrà pubblicato")
-  }
-
-}, [formData.available])
 
 
 // Funzione per gestire il cambiamento del valore dell'input
   const handleInputChange = (event) => {
     const keyToChange = event.target.name;
 
-
-    let newValue;
-    // Se l'input è checkbox
-    if (event.target.type === "checkbox") {
-      //il value da inserire sarà true o false, preso da target.checked
-      newValue = event.target.checked;
-    } else {
-      newValue = event.target.value;
-    }
-
     const newData = {
       ...formData,
-      [keyToChange]: newValue,
+      [keyToChange]: event.target.value,
     };
 
     setFormData(newData);
   };
+   const url = "http://localhost:3003"
 
+ useEffect(() => {
+  getPosts()
+ }, []);
 
-
+ const getPosts = () => {
+  axios.get(`${url}/posts`).then((resp) =>{
+    
+    // console.log(resp.data.postsList);
+    
+    setArticles(resp.data.postsList)
+  });
+ };
+ console.log(articles);
+ 
 
   // Funzione per gestire l'invio del form
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    axios.post(`${url}/posts`, formData).then((resp) => {
+      
+    
+
     //creo oggetto nuovo articolo
     const newArticle = {
       ...formData,
-      id: Date.now()
     }
 
     //creo copia degli articoli precedenti
@@ -67,12 +64,18 @@ useEffect(() => {
 
     //ripulisco stati del form
     setFormData(initialFormData);
+  })
 
   };
 
   const cancella = (idDaCancellare) => {
     const newArray = articles.filter((curArt) => curArt.id !== idDaCancellare);
     setArticles(newArray);
+    axios.delete(`${url}/posts/${idDaCancellare}`).then((resp) => {
+    });
+  console.log(articles);
+  
+    
   };
 
   return (
@@ -87,8 +90,9 @@ useEffect(() => {
                 <div className="col" key={curItem.id}>
                   <div className="card">
                     <div className="card-body">
-                      <h4>{curItem.title}</h4>
-                      <p>{curItem.author}</p>
+                      <h4>{curItem.titolo}</h4>
+                      <p>{curItem.contenuto}</p>
+                      <img src= {`${url} ${curItem.immagine}`}/>
                       <button
                         onClick={() => cancella(curItem.id)}
                         className="btn btn-warning"
@@ -117,9 +121,9 @@ useEffect(() => {
                 <input
                   className='form-control w-50'
                   type="text" id='article-title'
-                  name='title'
+                  name='titolo'
                   // Imposta il valore dell'input
-                  value={formData.title || ""}
+                  value={formData.titolo || ""}
                   // Chiama handleChange quando il valore dell'input cambia
                   onChange={handleInputChange}
                 />
@@ -131,9 +135,9 @@ useEffect(() => {
                 <textarea
                   className='form-control '
                   type="text" id='article-content'
-                  name='content'
+                  name='contenuto'
                   // Imposta il valore dell'input
-                  value={formData.content || ""}
+                  value={formData.contenuto || ""}
                   // Chiama handleChange quando il valore dell'input cambia
                   onChange={handleInputChange}
                 />
@@ -145,9 +149,9 @@ useEffect(() => {
                 <input
                   className='form-control w-50'
                   type="text" id='article-image'
-                  name='image'
+                  name='immagine'
                   // Imposta il valore dell'input
-                  value={formData.image || ""}
+                  value={formData.immagine || ""}
                   // Chiama handleChange quando il valore dell'input cambia
                   onChange={handleInputChange}
                 />
