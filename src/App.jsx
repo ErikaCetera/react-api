@@ -7,7 +7,8 @@ import { AppForm } from './components/AppForm';
 const initialFormData = {
   titolo: "",
   contenuto: "",
-  immagine: ""
+  immagine: "",
+  tags: []
 };
 
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -17,6 +18,8 @@ function App() {
   //Variabili di stato 
   const [articles, setArticles] = useState([]);
   const [formData, setFormData] = useState(initialFormData);
+  const [tags, setTags] = useState([]);
+  const [filter, setFilter] = useState("all");
 
   // Funzione per gestire il cambiamento del valore dell'input
   const handleInputChange = (event) => {
@@ -33,11 +36,16 @@ function App() {
   //Mostra i posts all'avvio della pagina
   useEffect(() => {
     getPosts()
-  }, []);
+  }, [filter]);
 
   const getPosts = () => {
     //Preleva lista dei posts dal server
-    axios.get(`${apiUrl}/posts`).then((resp) => {
+    let url = `${apiUrl}/posts`;
+    if(filter !== "all"){
+      url += `?tags=${filter.replace(/\s+/g, '%20')}`;
+    }
+    axios.get(url).then((resp) => {
+      console.log(resp)
       setArticles(resp.data.postsList)
     });
   };
@@ -70,9 +78,25 @@ function App() {
     });
   };
 
+  useEffect( () => {
+    getTags()
+  }, [])
+
+  const getTags = () => {
+   axios.get(`${apiUrl}/tags`).then((resp) =>{
+    setTags(resp.data.tags)
+  });
+};
   return (
     <>
       <main className='container mt-5'>
+
+      <section>
+          <select name="tag" value={filter} onChange={(event)=> setFilter(event.target.value)}>
+            <option value="all">Tutti i Tags</option>
+           {tags.map((curTag, index) => <option key={index} value={curTag}>{curTag}</option>)}
+          </select>
+        </section>
 
         <section className='my-5'>
           <h2>Articoli</h2>
@@ -102,6 +126,8 @@ function App() {
             />
           </div>
         </section>
+
+        
       </main>
     </>
   )

@@ -9,6 +9,7 @@ export const AppCard = ({ post, onDelete }) => {
                     <h4>{post.titolo}</h4>
                     <p>{post.contenuto}</p>
                     <img src={`${apiUrl}/${post.immagine}`} />
+                    <span>{post.tags.join('-')}</span>
                 </div>
             </div>
             <div>
